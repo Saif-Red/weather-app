@@ -15,16 +15,18 @@ def get_coordinates(city):
     try:
         response = requests.get(url, params=params)
         response.raise_for_status()
-    except requests.RequestException:
-        print("Unable to connect to the weather service.")
-        exit()
-
+    except requests.RequestException as error:
+        raise ConnectionError(
+            "Unable to connect to the weather service."
+        ) from error
+    
     data = response.json()
     results = data.get("results")
 
     if not results:
-        print("City not found. Please check the spelling and try again.")
-        exit()
+        raise ValueError(
+            "City not found. Please check the spelling and try again."
+        )
 
     location = results[0]
     latitude = location["latitude"]
@@ -43,9 +45,10 @@ def get_weather(latitude, longitude):
     try:
         response = requests.get(url, params=params)
         response.raise_for_status()
-    except requests.RequestException:
-        print("Unable to retrieve weather information.")
-        exit()
+    except requests.RequestException as error:
+        raise ConnectionError(
+            "Unable to retrieve weather information."
+        ) from error
 
     data = response.json()
     current = data["current"]

@@ -5,8 +5,15 @@ city = city.strip()
 if not city:
     print("Please enter a city name.")
     exit()
-latitude, longitude = get_coordinates(city)
-weather = get_weather(latitude, longitude)
+try:
+    latitude, longitude = get_coordinates(city)
+    weather = get_weather(latitude, longitude)
+except ValueError as error:
+    print(error)
+    exit()
+except ConnectionError as error:
+    print(error)
+    exit()
 print("Weather for", city, "\n")
 print("Temperature:", weather["temperature"], weather["temperature_unit"])
 print("Feels like:", weather["feels_like"], weather["feels_like_unit"])
