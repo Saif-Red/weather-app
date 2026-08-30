@@ -31,7 +31,8 @@ def get_coordinates(city):
     location = results[0]
     latitude = location["latitude"]
     longitude = location["longitude"]
-    return latitude, longitude
+    country = location.get("country", "")
+    return latitude, longitude, country
 
 def get_weather(latitude, longitude):
     url = "https://api.open-meteo.com/v1/forecast"

@@ -6,7 +6,7 @@ if not city:
     print("Please enter a city name.")
     exit()
 try:
-    latitude, longitude = get_coordinates(city)
+    latitude, longitude, country = get_coordinates(city)
     weather = get_weather(latitude, longitude)
 except ValueError as error:
     print(error)
