@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from datetime import datetime
+import threading
 from weather_api import get_coordinates, get_weather
 
 # =========================
@@ -152,10 +153,233 @@ city_entry.pack(
     padx = (0, 12)
 )
 
+def select_search_text(event=None):
+    city_entry.focus_set()
+    city_entry.select_range(0, "end")
+
+city_entry.bind(
+    "<Button-1>",
+    select_search_text
+)
+
 city_entry.bind(
     "<Return>",
     lambda event: search_weather()
 )
+
+# =========================
+# Weather Search Functions
+# =========================
+
+def show_error(message, city):
+    search_button.configure(
+        state = "normal",
+        text = "Search"
+    )
+
+    if "City not found" in message:
+        error_window = ctk.CTkToplevel(app)
+
+        error_window.title("City Not Found")
+        error_window.geometry("400x220")
+        error_window.resizable(False, False)
+
+        error_window.transient(app)
+        error_window.grab_set()
+
+        title_label = ctk.CTkLabel(
+            error_window,
+            text = "⚠️ City Not Found",
+            font = ("Segoe UI", 20, "bold"),
+            text_color = TEXT_COLOR
+        )
+
+        title_label.pack(
+            pady=(30, 10)
+        )
+
+        message_label = ctk.CTkLabel(
+            error_window,
+            text = (
+                f'We couldn\'t find weather information for\n'
+                f'"{city}".\n\n'
+                f'Please check the city name and try again.'
+            ),
+            font = ("Segoe UI", 13),
+            text_color = SECONDARY_TEXT,
+            justify = "center"
+        )
+
+        message_label.pack(
+            pady=(0,20)
+        )
+
+        ok_button = ctk.CTkButton(
+            error_window,
+            text = "OK",
+            width = 100,
+            height = 35,
+            fg_color = PRIMARY_COLOR,
+            hover_color = "#1D4ED8",
+            command = error_window.destroy
+        )
+
+        ok_button.pack()
+
+        error_window.bind(
+            "<Return>",
+            lambda event: ok_button.invoke()
+        )
+
+        error_window.focus_force()
+
+    else:
+        error_window = ctk.CTkToplevel(app)
+
+        error_window.title("Weather Error")
+        error_window.geometry("400x200")
+        error_window.resizable(False, False)
+
+        error_window.transient(app)
+        error_window.grab_set()
+
+        title_label = ctk.CTkLabel(
+            error_window,
+            text = "⚠️ Something went wrong",
+            font = ("Segoe UI", 20, "bold"),
+            text_color = TEXT_COLOR
+        )
+
+        title_label.pack(
+            pady=(30,10)
+        )
+
+        message_label = ctk.CTkLabel(
+            error_window,
+            text = message,
+            font = ("Segoe UI", 13),
+            text_color = SECONDARY_TEXT,
+            justify = "center"
+        )
+
+        message_label.pack(
+            pady = (0, 20)
+        )
+
+        ok_button = ctk.CTkButton(
+            error_window,
+            text = "OK",
+            width = 100,
+            height = 35,
+            fg_color = PRIMARY_COLOR,
+            hover_color = "#1D4ED8",
+            command = error_window.destroy
+        )
+
+        error_window.bind(
+            "<Return>",
+            lambda event: ok_button.invoke()
+        )
+
+        ok_button.pack()
+
+        error_window.focus_force()
+
+def fetch_weather(city):
+    try:
+        latitude, longitude, country = get_coordinates(city)
+        weather = get_weather(latitude, longitude)
+
+    except ValueError as error:
+        message = str(error)
+        app.after(
+            0,
+            lambda: show_error(
+                message,
+                city
+            )
+        )
+        return
+
+    except ConnectionError as error:
+        message = str(error)
+        app.after(
+            0,
+            lambda: show_error(
+                message,
+                city
+            )
+        )
+        return
+
+    app.after(
+        0,
+        lambda: update_weather_display(
+            city,
+            country,
+            weather
+        )
+    )
+
+def update_weather_display(city, country, weather):
+
+    location_label.configure(
+        text = f"{city.title()}, {country}"
+    )    
+        
+    weather_icon.configure(
+        text = weather["current_icon"]
+    )
+        
+    temperature_label.configure(
+        text = f'{weather["temperature"]}{weather["temperature_unit"]}'
+    )
+        
+    condition_label.configure(
+        text = weather["current_condition"]
+    )
+        
+    feels_like_label.configure(
+        text = (
+            f'Feels like '
+            f'{weather["feels_like"]}'
+            f'{weather["feels_like_unit"]}'
+        )
+    )
+        
+    humidity_value.configure(
+        text = (
+            f'{weather["humidity"]} '
+            f'{weather["humidity_unit"]}'
+        )
+    )
+        
+    wind_value.configure(
+        text = (
+            f'{weather["wind_speed"]} '
+            f'{weather["wind_speed_unit"]}'
+        )
+    )
+        
+    pressure_value.configure(
+        text = (
+            f'{weather["pressure"]} '
+            f'{weather["pressure_unit"]}'
+        )
+    )
+        
+    update_forecast(
+        weather["forecast"]
+    )
+
+    updated_label.configure(
+        text = "Current weather"
+    )
+
+    search_button.configure(
+        state = "normal",
+        text = "Search"
+    )
 
 def search_weather():
     city = city_entry.get().strip()
@@ -164,66 +388,20 @@ def search_weather():
         print("Please enter a city name.")
         return
 
-    try:
-        latitude, longitude, country = get_coordinates(city)
-        weather = get_weather(latitude, longitude)
-
-    except ValueError as error:
-        print(error)
-        return
-
-    except ConnectionError as error:
-        print(error)
-        return
-
-    location_label.configure(
-        text = f"{city.title()}, {country}"
+    search_button.configure(
+        state = "disabled",
+        text = "Loading..."
     )
 
-    weather_icon.configure(
-        text = weather["current_icon"]
+    updated_label.configure(
+        text = "Fetching weather data..."
     )
 
-    temperature_label.configure(
-        text = f"{weather["temperature"]}{weather["temperature_unit"]}"
-    )
-
-    condition_label.configure(
-        text = weather["current_condition"]
-    )
-
-    feels_like_label.configure(
-        text = (
-            f'Feels like '
-            f'{weather["feels_like"]}'
-            f'{weather["feels_like_unit"]}'
-        )
-    )
-
-    humidity_value.configure(
-        text = (
-            f'{weather["humidity"]} '
-            f'{weather["humidity_unit"]}'
-        )
-    )
-
-    wind_value.configure(
-        text = (
-            f'{weather["wind_speed"]} '
-            f'{weather["wind_speed_unit"]}'
-        )
-    )
-
-    pressure_value.configure(
-        text = (
-            f'{weather["pressure"]} '
-            f'{weather["pressure_unit"]}'
-        )
-    )
-
-    update_forecast(
-        weather["forecast"]
-    )
+    threading.Thread(
+        target = fetch_weather,
+        args = (city,),
+        daemon = True
+    ).start()
 
 search_button = ctk.CTkButton(
     search_frame,
