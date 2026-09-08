@@ -221,6 +221,10 @@ def search_weather():
         )
     )
 
+    update_forecast(
+        weather["forecast"]
+    )
+
 search_button = ctk.CTkButton(
     search_frame,
     text = "Search",
@@ -528,7 +532,7 @@ for column in range(7):
         weight = 1
     )
 
-def create_forecast_day(parent, column, day, icon, high, low):
+def create_forecast_day(parent, column):
     day_frame = ctk.CTkFrame(
         parent,
         fg_color = CARD_COLOR
@@ -543,7 +547,7 @@ def create_forecast_day(parent, column, day, icon, high, low):
 
     day_label = ctk.CTkLabel(
         day_frame,
-        text = day,
+        text = "---",
         font = ("Segoe UI", 11, "bold"),
         text_color = SECONDARY_TEXT
     )
@@ -554,7 +558,7 @@ def create_forecast_day(parent, column, day, icon, high, low):
 
     icon_label = ctk.CTkLabel(
         day_frame,
-        text = icon,
+        text = "🌡️",
         font = ("Segoe UI Emoji", 28)
     )
 
@@ -564,7 +568,7 @@ def create_forecast_day(parent, column, day, icon, high, low):
 
     temperature_label = ctk.CTkLabel(
         day_frame,
-        text = f"{high}° / {low}°",
+        text = "--° / --°",
         font = ("Segoe UI", 12, "bold"),
         text_color = TEXT_COLOR
     )
@@ -573,29 +577,45 @@ def create_forecast_day(parent, column, day, icon, high, low):
         pady = (5, 10)
     )
 
-    return day_frame
+    return {
+        "day": day_label,
+        "icon": icon_label,
+        "temperature": temperature_label
+    }
 
-test_forecast = [
-    ("SUN", "☀️", 31, 25),
-    ("MON", "🌤️", 30, 24),
-    ("TUE", "⛅", 28, 23),
-    ("WED", "☁️", 27, 22),
-    ("THU", "🌧️", 26, 22),
-    ("FRI", "☀️", 29, 24),
-    ("SAT", "☀️", 31, 25)
-]
+forecast_widgets = []
 
-for column, forecast in enumerate(test_forecast):
-    day, icon, high, low = forecast
-
-    create_forecast_day(
+for column in range(7):
+    widgets = create_forecast_day(
         forecast_frame,
-        column,
-        day,
-        icon,
-        high,
-        low
+        column
     )
+
+    forecast_widgets.append(widgets)
+
+def update_forecast(forecast):
+    for index, day_data in enumerate(forecast):
+        date = datetime.strptime(
+            day_data["date"],
+            "%Y-%m-%d"
+        )
+
+        day_name = date.strftime("%a").upper()
+
+        forecast_widgets[index]["day"].configure(
+            text = day_name
+        )
+
+        forecast_widgets[index]["icon"].configure(
+            text = day_data["icon"]
+        )
+
+        forecast_widgets[index]["temperature"].configure(
+            text = (
+                f'{day_data["max_temperature"]:.0f}° / '
+                f'{day_data["min_temperature"]:.0f}°'
+            )
+        )
 
 # =========================
 # Start Application
