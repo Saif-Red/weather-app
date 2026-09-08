@@ -8,6 +8,21 @@ if not city:
 try:
     latitude, longitude, country = get_coordinates(city)
     weather = get_weather(latitude, longitude)
+
+    print("\n7-Day Forecast:")
+
+    for day in weather["forecast"]:
+        print(
+            day["date"],
+            "|",
+            day["icon"],
+            day["condition"],
+            "| High:",
+            day["max_temperature"],
+            "| Low:",
+            day["min_temperature"]
+        )
+
 except ValueError as error:
     print(error)
     exit()

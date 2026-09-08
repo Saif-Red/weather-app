@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from datetime import datetime
+from weather_api import get_coordinates, get_weather
 
 # =========================
 # Application Configuration
@@ -7,7 +8,7 @@ from datetime import datetime
 
 APP_TITLE = "Weather App"
 APP_WIDTH = 1100
-APP_HEIGHT = 750
+APP_HEIGHT = 800
 
 # =========================
 # Theme
@@ -27,7 +28,7 @@ app = ctk.CTk()
 
 app.title(APP_TITLE)
 app.geometry(f"{APP_WIDTH}x{APP_HEIGHT}")
-app.minsize(960, 650)
+app.minsize(900, 600)
 
 app.configure(fg_color=BG_COLOR)
 
@@ -35,17 +36,15 @@ app.configure(fg_color=BG_COLOR)
 # Main Content
 # =========================
 
-main_frame =ctk.CTkFrame(
+content_frame =ctk.CTkFrame(
     app,
     fg_color = BG_COLOR,
     corner_radius = 0
 )
 
-main_frame.pack(
+content_frame.pack(
     fill = "both",
-    expand = True,
-    padx = 40,
-    pady = 30
+    expand = True
 )
 
 # =========================
@@ -53,14 +52,15 @@ main_frame.pack(
 # =========================
 
 header_frame = ctk.CTkFrame(
-    main_frame,
+    content_frame,
     fg_color = BG_COLOR,
     corner_radius = 0
 )
 
 header_frame.pack(
     fill = "x",
-    pady = (0,25)
+    padx = 40,
+    pady = (20,15)
 )
 
 app_name = ctk.CTkLabel(
@@ -102,11 +102,28 @@ def update_clock():
     app.after(1000, update_clock)
 
 # =========================
+# Scorllable Content
+# =========================
+
+scroll_frame = ctk.CTkScrollableFrame(
+    content_frame,
+    fg_color = BG_COLOR,
+    corner_radius = 0
+)
+
+scroll_frame.pack(
+    fill = "both",
+    expand = True,
+    padx = 25,
+    pady = (0, 10)
+)
+
+# =========================
 # Search Section
 # =========================
 
 search_frame = ctk.CTkFrame(
-    main_frame,
+    scroll_frame,
     fg_color = BG_COLOR,
     corner_radius = 0
 )
@@ -147,7 +164,62 @@ def search_weather():
         print("Please enter a city name.")
         return
 
-    print("Searching for:", city)
+    try:
+        latitude, longitude, country = get_coordinates(city)
+        weather = get_weather(latitude, longitude)
+
+    except ValueError as error:
+        print(error)
+        return
+
+    except ConnectionError as error:
+        print(error)
+        return
+
+    location_label.configure(
+        text = f"{city.title()}, {country}"
+    )
+
+    weather_icon.configure(
+        text = weather["current_icon"]
+    )
+
+    temperature_label.configure(
+        text = f"{weather["temperature"]}{weather["temperature_unit"]}"
+    )
+
+    condition_label.configure(
+        text = weather["current_condition"]
+    )
+
+    feels_like_label.configure(
+        text = (
+            f'Feels like '
+            f'{weather["feels_like"]}'
+            f'{weather["feels_like_unit"]}'
+        )
+    )
+
+    humidity_value.configure(
+        text = (
+            f'{weather["humidity"]} '
+            f'{weather["humidity_unit"]}'
+        )
+    )
+
+    wind_value.configure(
+        text = (
+            f'{weather["wind_speed"]} '
+            f'{weather["wind_speed_unit"]}'
+        )
+    )
+
+    pressure_value.configure(
+        text = (
+            f'{weather["pressure"]} '
+            f'{weather["pressure_unit"]}'
+        )
+    )
 
 search_button = ctk.CTkButton(
     search_frame,
@@ -171,7 +243,7 @@ search_button.pack(side="right")
 # =========================
 
 weather_card = ctk.CTkFrame(
-    main_frame,
+    scroll_frame,
     fg_color = CARD_COLOR,
     corner_radius = 24
 )
@@ -246,6 +318,284 @@ feels_like_label = ctk.CTkLabel(
 feels_like_label.pack(
     pady = (5, 30)
 )
+
+# =========================
+# Weather Details
+# =========================
+
+details_frame = ctk.CTkFrame(
+    scroll_frame,
+    fg_color = BG_COLOR,
+    corner_radius = 0
+)
+
+details_frame.pack(
+    fill = "x",
+    pady = (0, 25)
+)
+
+details_frame.grid_columnconfigure(
+    0,
+    weight = 1
+)
+
+details_frame.grid_columnconfigure(
+    1,
+    weight = 1
+)
+
+details_frame.grid_columnconfigure(
+    2,
+    weight = 1
+)
+
+humidity_card = ctk.CTkFrame(
+    details_frame,
+    fg_color = CARD_COLOR,
+    corner_radius = 18
+)
+
+humidity_card.grid(
+    row = 0,
+    column = 0,
+    padx = (0, 0),
+    sticky  = "nsew"
+)
+
+humidity_icon = ctk.CTkLabel(
+    humidity_card,
+    text = "💧",
+    font = ("Segoe UI Emoji", 26)
+)
+
+humidity_icon.pack(
+    pady = (18, 5)
+)
+
+humidity_title = ctk.CTkLabel(
+    humidity_card,
+    text = "HUMIDITY",
+    font = ("Segoe UI", 11, "bold"),
+    text_color = SECONDARY_TEXT
+)
+
+humidity_title.pack()
+
+humidity_value = ctk.CTkLabel(
+    humidity_card,
+    text = " 72 %",
+    font = ("Segoe UI", 20, "bold"),
+    text_color = TEXT_COLOR
+)
+
+humidity_value.pack(
+    pady = (5, 18)
+)
+
+# WIND
+
+wind_card = ctk.CTkFrame(
+    details_frame,
+    fg_color = CARD_COLOR,
+    corner_radius = 18
+)
+
+wind_card.grid(
+    row = 0,
+    column = 1,
+    padx = 8,
+    sticky = "nsew"
+)
+
+wind_icon = ctk.CTkLabel(
+    wind_card,
+    text = "💨",
+    font = ("Segoe UI Emoji", 26)
+)
+
+wind_icon.pack(
+    pady = (18, 5)
+)
+
+wind_title = ctk.CTkLabel(
+    wind_card,
+    text = "WIND",
+    font = ("Segoe UI", 11, "bold"),
+    text_color = SECONDARY_TEXT
+)
+
+wind_title.pack()
+
+wind_value = ctk.CTkLabel(
+    wind_card,
+    text = "2.6 km/h",
+    font = ("Segoe UI", 20, "bold"),
+    text_color = TEXT_COLOR
+)
+
+wind_value.pack(
+    pady = (5, 18)
+)
+
+# PRESSURE
+
+pressure_card = ctk.CTkFrame(
+    details_frame,
+    fg_color = CARD_COLOR,
+    corner_radius = 18
+)
+
+pressure_card.grid(
+    row = 0,
+    column = 2,
+    padx = (8, 0),
+    sticky = "nsew"
+)
+
+pressure_icon = ctk.CTkLabel(
+    pressure_card,
+    text = "◉",
+    font = ("Segoe UI", 26),
+    text_color = TEXT_COLOR
+)
+
+pressure_icon.pack(
+    pady = (18, 5)
+)
+
+pressure_title = ctk.CTkLabel(
+    pressure_card,
+    text = "PRESSURE",
+    font = ("Segoe UI", 11, "bold"),
+    text_color = SECONDARY_TEXT
+)
+
+pressure_title.pack()
+
+pressure_value = ctk.CTkLabel(
+    pressure_card,
+    text = "1008.8 hPa",
+    font = ("Segoe UI", 20, "bold"),
+    text_color = TEXT_COLOR
+)
+
+pressure_value.pack(
+    pady = (5, 18)
+)
+
+# =========================
+# 7-Day Forecast
+# =========================
+
+forecast_card = ctk.CTkFrame(
+    scroll_frame,
+    fg_color = CARD_COLOR,
+    corner_radius =20
+)
+
+forecast_card.pack(
+    fill = "x",
+    pady = (0, 25)
+)
+
+forecast_title = ctk.CTkLabel(
+    forecast_card,
+    text = "7-Day FORECAST",
+    font = ("Segoe UI", 12, "bold"),
+    text_color = SECONDARY_TEXT
+)
+
+forecast_title.pack(
+    anchor = "w",
+    padx =25,
+    pady = (20, 10)
+)
+
+forecast_frame = ctk.CTkFrame(
+    forecast_card,
+    fg_color = CARD_COLOR
+)
+
+forecast_frame.pack(
+    fill = "x",
+    padx = 20,
+    pady = (0, 20)
+)
+
+for column in range(7):
+    forecast_frame.grid_columnconfigure(
+        column,
+        weight = 1
+    )
+
+def create_forecast_day(parent, column, day, icon, high, low):
+    day_frame = ctk.CTkFrame(
+        parent,
+        fg_color = CARD_COLOR
+    )
+
+    day_frame.grid(
+        row = 0,
+        column = column,
+        padx = 5,
+        sticky = "nsew"
+    )
+
+    day_label = ctk.CTkLabel(
+        day_frame,
+        text = day,
+        font = ("Segoe UI", 11, "bold"),
+        text_color = SECONDARY_TEXT
+    )
+
+    day_label.pack(
+        pady = (5, 8)
+    )
+
+    icon_label = ctk.CTkLabel(
+        day_frame,
+        text = icon,
+        font = ("Segoe UI Emoji", 28)
+    )
+
+    icon_label.pack(
+        pady = 5
+    )
+
+    temperature_label = ctk.CTkLabel(
+        day_frame,
+        text = f"{high}° / {low}°",
+        font = ("Segoe UI", 12, "bold"),
+        text_color = TEXT_COLOR
+    )
+
+    temperature_label.pack(
+        pady = (5, 10)
+    )
+
+    return day_frame
+
+test_forecast = [
+    ("SUN", "☀️", 31, 25),
+    ("MON", "🌤️", 30, 24),
+    ("TUE", "⛅", 28, 23),
+    ("WED", "☁️", 27, 22),
+    ("THU", "🌧️", 26, 22),
+    ("FRI", "☀️", 29, 24),
+    ("SAT", "☀️", 31, 25)
+]
+
+for column, forecast in enumerate(test_forecast):
+    day, icon, high, low = forecast
+
+    create_forecast_day(
+        forecast_frame,
+        column,
+        day,
+        icon,
+        high,
+        low
+    )
 
 # =========================
 # Start Application
