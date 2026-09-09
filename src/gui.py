@@ -109,6 +109,76 @@ menu_frame = ctk.CTkFrame(
 
 menu_frame.pack_propagate(False)
 
+def show_help():
+    help_window = ctk.CTkToplevel(app)
+
+    help_window.title("Weather App - Help")
+    help_window.geometry("500x420")
+    help_window.resizable(False, False)
+
+    help_window.transient(app)
+    help_window.grab_set()
+
+    title_label = ctk.CTkLabel(
+        help_window,
+        text = "Weather App Help",
+        font = ("Segoe UI", 22, "bold"),
+        text_color = TEXT_COLOR
+    )
+
+    title_label.pack(
+        pady=(25,15)
+    )
+
+    help_text = (
+        "How to use the Weather App\n\n"
+        "1. Search for a city:\n"
+        "   Enter the name of a city in the search box and press\n"
+        "   Search or Enter.\n\n"
+        "2. View current weather:\n"
+        "   The app displays temperature, condition, humidity, wind speed\n"
+        "   and pressure.\n\n"
+        "3. View the forecast:\n"
+        "   Scroll down to see the 7-day forecast.\n\n"
+        "4. Menu:\n"
+        "   Use the ☰ menu to access Help, About\n"
+        "   and Settings."
+    )
+
+    message_label = ctk.CTkLabel(
+        help_window,
+        text = help_text,
+        font = ("Segoe U", 15),
+        text_color = SECONDARY_TEXT,
+        justify = "left",
+        anchor = "w"
+    )
+
+    message_label.pack(
+        padx=35,
+        pady=(0,20),
+        fill="x"
+    )
+
+    close_button = ctk.CTkButton(
+        help_window,
+        text = "Close",
+        width = 100,
+        height = 35,
+        fg_color = PRIMARY_COLOR,
+        hover_color = "#1D4ED8",
+        command = help_window.destroy
+    )
+
+    close_button.pack()
+
+    help_window.bind(
+        "<Return>",
+        lambda event: close_button.invoke()
+    )
+
+    help_window.focus_force()
+
 help_button = ctk.CTkButton(
     menu_frame,
     text = "Help",
@@ -117,7 +187,8 @@ help_button = ctk.CTkButton(
     hover_color = "#E8EDF5",
     text_color = TEXT_COLOR,
     anchor = "w",
-    corner_radius = 8
+    corner_radius = 8,
+    command = show_help
 )
 
 help_button.pack(
@@ -125,6 +196,73 @@ help_button.pack(
     padx = 8,
     pady = (8,2)
 )
+
+def show_about():
+    about_window = ctk.CTkToplevel(app)
+
+    about_window.title("About Weather App")
+    about_window.geometry("450x350")
+    about_window.resizable(False, False)
+
+    about_window.transient(app)
+    about_window.grab_set()
+
+    title_label = ctk.CTkLabel(
+        about_window,
+        text = "🌦️ Weather App",
+        font = ("Segoe UI", 24, "bold"),
+        text_color =TEXT_COLOR
+    )
+
+    title_label.pack(
+        pady=(35,10)
+    )
+
+    version_label = ctk.CTkLabel(
+        about_window,
+        text = "Version 1.0",
+        font = ("Segoe UI", 13),
+        text_color = SECONDARY_TEXT
+    )
+
+    version_label.pack(
+        pady=(0,20)
+    )
+
+    description_label = ctk.CTkLabel(
+        about_window,
+        text = (
+            "A modern desktop weather application\n"
+            "built with Python and CustomTkinter.\n\n"
+            "Weather data is provided by Open-Meteo."
+        ),
+        font = ("Segoe UI", 13),
+        text_color = SECONDARY_TEXT,
+        justify = "center"
+    )
+
+    description_label.pack(
+        pady=(0,25)
+    )
+
+    close_button = ctk.CTkButton(
+        about_window,
+        text = "Close",
+        width = 100,
+        height = 35,
+        fg_color = PRIMARY_COLOR,
+        hover_color = "#1D4ED8",
+        command = about_window.destroy
+    )
+
+    close_button.pack()
+
+    about_window.bind(
+        "<Return>",
+        lambda event: close_button.invoke()
+    )
+
+    about_window.focus_force()
 
 about_button = ctk.CTkButton(
     menu_frame,
@@ -134,7 +272,8 @@ about_button = ctk.CTkButton(
     hover_color = "#E8EDF5",
     text_color = TEXT_COLOR,
     anchor = "w",
-    corner_radius = 8
+    corner_radius = 8,
+    command= show_about
 )
 
 about_button.pack(
