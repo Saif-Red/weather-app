@@ -73,6 +73,16 @@ app_name = ctk.CTkLabel(
 
 app_name.pack(side="left")
 
+def update_clock():
+    current_time = datetime.now().strftime("%H:%M:%S")
+    clock_label.configure(text=current_time)
+
+    app.after(1000, update_clock)
+
+# =========================
+# Menu Content
+# =========================
+
 menu_button = ctk.CTkButton(
     header_frame,
     text = "☰",
@@ -87,6 +97,93 @@ menu_button = ctk.CTkButton(
 
 menu_button.pack(side="right")
 
+menu_frame = ctk.CTkFrame(
+    app,
+    width = 150,
+    height = 130,
+    fg_color = CARD_COLOR,
+    corner_radius = 12,
+    border_width = 1,
+    border_color = "#D8E0EB"
+)
+
+menu_frame.pack_propagate(False)
+
+help_button = ctk.CTkButton(
+    menu_frame,
+    text = "Help",
+    height = 35,
+    fg_color = CARD_COLOR,
+    hover_color = "#E8EDF5",
+    text_color = TEXT_COLOR,
+    anchor = "w",
+    corner_radius = 8
+)
+
+help_button.pack(
+    fill = "x",
+    padx = 8,
+    pady = (8,2)
+)
+
+about_button = ctk.CTkButton(
+    menu_frame,
+    text = "About",
+    height = 35,
+    fg_color = CARD_COLOR,
+    hover_color = "#E8EDF5",
+    text_color = TEXT_COLOR,
+    anchor = "w",
+    corner_radius = 8
+)
+
+about_button.pack(
+    fill = "x",
+    padx = 8,
+    pady = 2
+)
+
+settings_button = ctk.CTkButton(
+    menu_frame,
+    text = "Settings",
+    height = 35,
+    fg_color = CARD_COLOR,
+    hover_color = "#E8EDF5",
+    text_color = TEXT_COLOR,
+    anchor = "w",
+    corner_radius = 8
+)
+
+settings_button.pack(
+    fill = "x",
+    padx = 8,
+    pady = 2
+)
+
+menu_frame.place_forget()
+
+def toggle_menu():
+
+    print("MENU BUTTON CLICKED")
+
+    if menu_frame.winfo_ismapped():
+        menu_frame.place_forget()
+        return
+
+    menu_frame.place(
+        relx = 1.0,
+        rely = 0.0,
+        anchor = "ne",
+        x = -25,
+        y = 90
+    )
+
+    menu_frame.lift()
+
+menu_button.configure(
+    command = toggle_menu
+)
+
 clock_label = ctk.CTkLabel(
     header_frame,
     text = "00:00:00",
@@ -95,12 +192,6 @@ clock_label = ctk.CTkLabel(
 )
 
 clock_label.pack(side="right", padx=(0, 15))
-
-def update_clock():
-    current_time = datetime.now().strftime("%H:%M:%S")
-    clock_label.configure(text=current_time)
-
-    app.after(1000, update_clock)
 
 # =========================
 # Scorllable Content
