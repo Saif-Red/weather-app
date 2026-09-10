@@ -21,6 +21,8 @@ PRIMARY_COLOR = "#2563EB"
 TEXT_COLOR = "#172033"
 SECONDARY_TEXT = "#64748B"
 
+TEMPERATURE_UNIT = "celsius"
+
 # =========================
 # Main Window
 # =========================
@@ -282,6 +284,105 @@ about_button.pack(
     pady = 2
 )
 
+def show_settings():
+    settings_window =ctk.CTkToplevel(app)
+
+    settings_window.title("Weather App - Settings")
+    settings_window.geometry("420x300")
+    settings_window.resizable(False, False)
+
+    settings_window.transient(app)
+    settings_window.grab_set()
+
+    title_label = ctk.CTkLabel(
+        settings_window,
+        text = "Settings",
+        font = ("Segoe UI", 22, "bold"),
+        text_color = TEXT_COLOR
+    )
+
+    title_label.pack(
+        pady=(25,20)
+    )
+
+    unit_title = ctk.CTkLabel(
+        settings_window,
+        text = "Temperature Unit",
+        font = ("Segoe UI", 14, "bold"),
+        text_color = TEXT_COLOR
+    )
+
+    unit_title.pack(
+        anchor = "w",
+        padx = 40,
+        pady = (0,10)
+    )
+
+    selected_unit = ctk.StringVar(
+        value = TEMPERATURE_UNIT
+    )
+
+    celsius_radio = ctk.CTkRadioButton(
+        settings_window,
+        text = "Celsius (°C)",
+        variable = selected_unit,
+        value = "celsius",
+        text_color = TEXT_COLOR
+    )
+
+    celsius_radio.pack(
+        anchor = "w",
+        padx = 40,
+        pady = 5
+    )
+
+    fahrenheit_radio = ctk.CTkRadioButton(
+        settings_window,
+        text = "Fahrenheit (°F)",
+        variable = selected_unit,
+        value = "fahrenheit",
+        text_color = TEXT_COLOR
+    )
+
+    fahrenheit_radio.pack(
+        anchor = "w",
+        padx = 40,
+        pady = 5
+    )
+
+    def save_settings():
+        global TEMPERATURE_UNIT
+
+        TEMPERATURE_UNIT = selected_unit.get()
+
+        settings_window.destroy()
+
+        city = city_entry.get().strip()
+
+        if city:
+            search_weather()
+
+    save_button = ctk.CTkButton(
+        settings_window,
+        text = "Save",
+        width = 100,
+        height = 35,
+        fg_color = PRIMARY_COLOR,
+        hover_color = "#1D4ED8",
+        command = save_settings
+    )
+
+    save_button.pack(
+        pady = (25,10)
+    )
+
+    settings_window.bind(
+        "<Return>",
+        lambda event: save_button.invoke()
+    )
+
+    settings_window.focus_force()
+
 settings_button = ctk.CTkButton(
     menu_frame,
     text = "Settings",
@@ -290,7 +391,8 @@ settings_button = ctk.CTkButton(
     hover_color = "#E8EDF5",
     text_color = TEXT_COLOR,
     anchor = "w",
-    corner_radius = 8
+    corner_radius = 8,
+    command = show_settings
 )
 
 settings_button.pack(
@@ -518,7 +620,7 @@ def show_error(message, city):
 def fetch_weather(city):
     try:
         latitude, longitude, country = get_coordinates(city)
-        weather = get_weather(latitude, longitude)
+        weather = get_weather(latitude, longitude, TEMPERATURE_UNIT)
 
     except ValueError as error:
         message = str(error)

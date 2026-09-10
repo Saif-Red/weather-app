@@ -62,7 +62,7 @@ def get_coordinates(city):
     country = location.get("country", "")
     return latitude, longitude, country
 
-def get_weather(latitude, longitude):
+def get_weather(latitude, longitude, temperature_unit="celsius"):
     url = "https://api.open-meteo.com/v1/forecast"
 
     params = {
@@ -70,7 +70,8 @@ def get_weather(latitude, longitude):
         "longitude": longitude,
         "current": "temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,pressure_msl,weather_code",
         "daily": "weather_code,temperature_2m_max,temperature_2m_min",
-        "forecast_days": 7
+        "forecast_days": 7,
+        "temperature_unit": temperature_unit
     }
 
     try:
